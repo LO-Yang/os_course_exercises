@@ -20,19 +20,56 @@
 
 ## 3.1 BIOS
 -  x86中BIOS从磁盘读入的第一个扇区是是什么内容？为什么没有直接读入操作系统内核映像？
+    * 读入的是加载程序
+    * 不直接读入OS内核映像的原因:BIOS并不知道应该从硬盘的哪个分区启动，故对待所有硬盘，都读取1扇区内容。
 - 比较UEFI和BIOS的区别。
+    * UEFI比起BIOS，启动配置更灵活，支持容量更大
 - 理解rcore中的Berkeley BootLoader (BBL)的功能。
 
 ## 3.2 系统启动流程
 
 - x86中分区引导扇区的结束标志是什么？
+    * 0X55AA
 - x86中在UEFI中的可信启动有什么作用？
+    * 通过数字签名保证安全性
 - RV中BBL的启动过程大致包括哪些内容？
 
 ## 3.3 中断、异常和系统调用比较
 - 什么是中断、异常和系统调用？
+    * 中断：对 外部设备发出的请求 的处理
+    * 异常：对 指令执行时产生意外 的响应
+    * 系统调用：用于给应用程序调用的，操作系统提供的服务接口
 -  中断、异常和系统调用的处理流程有什么异同？
+    * 相同在于，三者都会使操作系统进入异常服务例程，进入内核态
+    * 不同在于，中断源于外部设备，异常和操作系统源于应用程序；此外中断是异步的，异常是同步的，而系统调用则两者皆可
 - 以ucore/rcore lab8的answer为例，ucore的系统调用有哪些？大致的功能分类有哪些？
+```
+static int (*syscalls[])(uint32_t arg[]) = {
+    [SYS_exit]       sys_exit,
+    [SYS_fork]       sys_fork,
+    [SYS_wait]       sys_wait,
+    [SYS_exec]       sys_exec,
+    [SYS_yield]      sys_yield,
+    [SYS_kill]       sys_kill,
+    [SYS_getpid]     sys_getpid,
+    [SYS_putc]       sys_putc,
+    [SYS_pgdir]      sys_pgdir,
+    [SYS_gettime]    sys_gettime,
+    [SYS_lab6_set_priority] sys_lab6_set_priority,
+    [SYS_sleep]      sys_sleep,
+    [SYS_open]       sys_open,
+    [SYS_close]      sys_close,
+    [SYS_read]       sys_read,
+    [SYS_write]      sys_write,
+    [SYS_seek]       sys_seek,
+    [SYS_fstat]      sys_fstat,
+    [SYS_fsync]      sys_fsync,
+    [SYS_getcwd]     sys_getcwd,
+    [SYS_getdirentry]       sys_getdirentry,
+    [SYS_dup]        sys_dup,
+};
+```
+类别有进程管理、文件操作、输出
 
 ## 3.4 linux系统调用分析
 - 通过分析[lab1_ex0](https://github.com/chyyuu/ucore_lab/blob/master/related_info/lab1/lab1-ex0.md)了解Linux应用的系统调用编写和含义。(仅实践，不用回答)
@@ -44,10 +81,11 @@
 - 以ucore/rcore lab8的answer为例，分析ucore 应用的系统调用编写和含义。
 - 以ucore/rcore lab8的answer为例，尝试修改并运行ucore OS kernel代码，使其具有类似Linux应用工具`strace`的功能，即能够显示出应用程序发出的系统调用，从而可以分析ucore应用的系统调用执行过程。
 
- 
 ## 3.6 请分析函数调用和系统调用的区别
 - 系统调用与函数调用的区别是什么？
+    * 系统调用在内核态中运行，函数调用仍在用户态运行
 - 通过分析x86中函数调用规范以及`int`、`iret`、`call`和`ret`的指令准确功能和调用代码，比较x86中函数调用与系统调用的堆栈操作有什么不同？
+    * 应用程序进行系统调用需要换栈，则ESP也需要被记录.
 - 通过分析RV中函数调用规范以及`ecall`、`eret`、`jal`和`jalr`的指令准确功能和调用代码，比较x86中函数调用与系统调用的堆栈操作有什么不同？
 
 
